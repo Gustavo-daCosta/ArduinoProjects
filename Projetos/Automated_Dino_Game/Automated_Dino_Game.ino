@@ -7,7 +7,7 @@ Servo myservo;
 bool trig=true;
 
 void setup() {    
-  myservo.attach(9);
+  myservo.attach(2);
   myservo.write(unpress_angle);   
 }
 
