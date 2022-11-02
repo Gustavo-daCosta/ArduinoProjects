@@ -1,14 +1,20 @@
 #include <HCSR04.h>
 
 int ledVerde1 = 2;
-int ledVerde2 = 3;
+int ledVerde2 = 4;
 int ledVerde3 = 7;
 int ledVerde4 = 9;
 
-int ledVermelho1 = 4;
+int ledVermelho1 = 3;
 int ledVermelho2 = 5;
 int ledVermelho3 = 6;
 int ledVermelho4 = 8;
+
+int leds[8] = {2, 3, 4, 6, 9, 8, 7, 5};
+int wantedValue;
+int wantedPosition;
+int ledAnterior;
+int ledPosterior;
 
 int triggerPin = 12;
 int echoPin = 13;
@@ -29,18 +35,44 @@ void setup() {
   pinMode(ledVermelho4, OUTPUT);
 }
 
+void atualizarDistancia() {distance = distanceSensor.measureDistanceCm();}
+
 void loop() {
-  distance = distanceSensor.measureDistanceCm();
+  atualizarDistancia();
   parkingStatus = distance > 9 ? false : true;
-  if (parkingStatus) {
-    vagaOcupada();
-    Serial.print("Vaga OCUPADA! Distância: ");
+  if (distance > 20) {  
+    animacao();
   } else {
-    vagaLivre();
-    Serial.print("Vaga LIVRE! Distância: ");
+    if (parkingStatus) {
+      vagaOcupada();
+      Serial.print("Vaga OCUPADA! Distância: ");
+    } else {
+      vagaLivre();
+      Serial.print("Vaga LIVRE! Distância: ");
+    }
   }
   Serial.println(distance);
   delay(1000);
+}
+
+void animacao() {
+  while (distance > 20) {
+    for (int led : leds) {
+      estadoTodosLeds(0);
+      digitalWrite(led, HIGH);
+
+      for (int i = 0; i < 8; i++) {
+        if (wantedValue == leds[i]) {
+          wantedPosition = i;
+          break;
+        }
+      }
+      
+      delay(150);
+      atualizarDistancia();
+      if (distance < 20) {break;}
+    }
+  }
 }
 
 void vagaOcupada() {
@@ -65,4 +97,9 @@ void estadoLedsVermelhos(int estado) {
   digitalWrite(ledVermelho2, estado);
   digitalWrite(ledVermelho3, estado);
   digitalWrite(ledVermelho4, estado);
+}
+
+void estadoTodosLeds(int estado) {
+  estadoLedsVerdes(estado);
+  estadoLedsVermelhos(estado);
 }
